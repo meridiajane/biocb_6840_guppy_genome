@@ -1,0 +1,44 @@
+---
+title: "lab_meeting_4_24_25"
+output: html_document
+date: "2025-04-24"
+---
+
+```{r setup}
+library(librarian)
+shelf(ggplot2)
+
+setwd("")
+
+theme_classic2 <- function (base_size = 15, base_family = "", base_line_size = base_size/22,
+                            base_rect_size = base_size/22)
+{
+  theme_bw(base_size = base_size, base_family = base_family,
+    base_line_size = base_line_size, base_rect_size = base_rect_size) %+replace%
+    theme(panel.border = element_blank(), axis.line = element_line(colour = "black",
+    linewidth = rel(1)),axis.text.x = element_text(color="#000000", size=15),
+    axis.text.y = element_text(color="#000000", size=15), legend.key = element_blank(),
+    strip.background = element_rect(fill = "white", colour = "black", linewidth = rel(2)),
+    axis.title.y = element_text(color = "#000000",size = 16,angle = 90, vjust = 2),
+    axis.title.x = element_text(color = "#000000",size = 16, vjust = -1),complete = TRUE)
+}
+
+```
+
+
+```{r}
+data <- read.csv("length_comparison.csv", header = TRUE, sep = ",")
+data$Length <- data$Length/1000000 
+```
+
+```{r}
+ggplot(data, aes(fill=Assembly,y=Length, x=factor(Chromosome,level=c(0,1,2,3,4,5,6,7,8,9,10,11,"X","Y",13,14,15,16,17,18,19,20,21,22,23))))+
+  geom_col(position="dodge", width=.7)+
+  scale_y_continuous(expand=c(0,0))+
+  scale_fill_manual(values=c("#ffb000","#fe6100","#dc267f","#785ef0"))+
+  xlab("Chromosome")+
+  ylab("Length (MB)")+
+  theme_classic2()+
+  theme(axis.title=element_text(size=28),axis.text=element_text(size=28))
+
+```

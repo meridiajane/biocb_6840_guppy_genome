@@ -1,0 +1,93 @@
+---
+title: "te_comparisons"
+output: html_document
+date: "2025-05-01"
+---
+
+```{r setup}
+library(librarian)
+shelf(ggplot2)
+
+setwd("")
+
+theme_classic2 <- function (base_size = 15, base_family = "", base_line_size = base_size/22,
+                            base_rect_size = base_size/22)
+{
+  theme_bw(base_size = base_size, base_family = base_family,
+    base_line_size = base_line_size, base_rect_size = base_rect_size) %+replace%
+    theme(panel.border = element_blank(), axis.line = element_line(colour = "black",
+    linewidth = rel(1)),axis.text.x = element_text(color="#000000", size=15),
+    axis.text.y = element_text(color="#000000", size=15), legend.key = element_blank(),
+    strip.background = element_rect(fill = "white", colour = "black", linewidth = rel(2)),
+    axis.title.y = element_text(color = "#000000",size = 16,angle = 90, vjust = 2),
+    axis.title.x = element_text(color = "#000000",size = 16, vjust = -1),complete = TRUE)
+}
+
+std.error <- function(x) sd(x)/sqrt(length(x))
+
+```
+
+# Bring in data
+```{r}
+matte_raw <- read.csv("mat_rm_summary.tsv", sep = "\t", header = TRUE)
+patte_raw <- read.csv("pat_rm_summary.tsv", sep = "\t", header = TRUE)
+```
+
+```{r}
+matte_origin <- matte_raw
+patte_origin <- patte_raw
+
+patte_origin["origin"] <- "paternal"
+matte_origin["origin"] <- "maternal"
+
+fulte <- rbind(patte_origin, matte_origin)
+
+
+matte_chr <- subset(matte_raw, grepl("mat_reticulata_chr",chromosome))
+patte_chr <- subset(patte_raw, grepl("pat_reticulata_chr",chromosome))
+
+matte_chrshort <- matte_chr
+matte_chrshort$chromosome <- gsub("[mat_reticulata_chr]","",matte_chrshort$chromosome)
+patte_chrshort <- patte_chr
+patte_chrshort$chromosome <- gsub("[pat_reticulata_chr]","",patte_chrshort$chromosome)
+
+mergete <- merge(matte_chrshort, patte_chrshort, 
+                 by.x = c("chromosome","te"), 
+                 by.y = c("chromosome", "te"))
+
+difte <- data.frame(
+        "chromosome" = mergete$chromosome,
+        "te" = mergete$te,
+        "diff" = (mergete$total_length.y - mergete$total_length.x)/1000
+)
+
+
+for ( element in unique(difte$te) ) {
+  for ( val in 1:23 ){
+      if ( !(element %in%  difte[difte$chromosome == val, "te"]) ) {
+        difte[nrow(difte) + 1,] = c(val,element,as.numeric(0))
+      }
+  }
+}
+
+difte$diff <- as.numeric(difte$diff)
+
+for ( element in unique(difte$te) ) {
+  difte[difte$te == element, "average"] <- mean(difte[difte$te == element & difte$chromosome != 12, "diff"])
+  difte[difte$te == element, "stderr"] <- std.error(difte[difte$te == element & difte$chromosome != 12, "diff"])
+}
+
+summary(difte)
+```
+
+```{r}
+ggplot(difte[difte$te != "Unknown" & difte$chromosome == "12",])+
+  geom_col(position="dodge", width=.7, aes(y=diff, x=te), fill = "black")+
+  geom_col(position="dodge", width=.7, aes(y=average, x=te), fill = "darkred")+
+  geom_errorbar(aes(x=te, ymin=average-stderr, ymax=average+stderr, color="red"))+
+  scale_y_continuous(expand=c(0,0))+
+  xlab("TE")+
+  ylab("Difference (Pat - Mat) (KB)")+
+  theme_classic2()+
+  theme(axis.text.x = element_text(angle = 90), legend.position = "none")
+```

@@ -1,0 +1,227 @@
+---
+title: "msy_graphing"
+author: "meridia_jane_bryant"
+date: "2025-07-08"
+output: html_document
+---
+# Setup
+## Environment
+```{r setup}
+library(librarian)
+shelf(ggplot2)
+shelf(gridExtra)
+
+setwd("")
+
+theme_classic2 <- function (base_size = 15, base_family = "", base_line_size = base_size/22,
+                            base_rect_size = base_size/22)
+{
+  theme_bw(base_size = base_size, base_family = base_family,
+    base_line_size = base_line_size, base_rect_size = base_rect_size) %+replace%
+    theme(panel.border = element_blank(), axis.line = element_line(colour = "black",
+    linewidth = rel(1)),axis.text.x = element_text(color="#000000", size=15),
+    axis.text.y = element_text(color="#000000", size=15), legend.key = element_blank(),
+    strip.background = element_rect(fill = "white", colour = "black", linewidth = rel(2)),
+    axis.title.y = element_text(color = "#000000",size = 16,angle = 90, vjust = 2),
+    axis.title.x = element_text(color = "#000000",size = 16, vjust = -1),complete = TRUE)
+}
+```
+
+## Data
+```{r}
+patx_x_surm <- read.csv("mmer_patx_binned100kb_chrx.tsv", header = FALSE, sep = "\t")
+patx_y_surm <- read.csv("mmer_patx_binned100kb_chry.tsv", header = FALSE, sep = "\t")
+patx_1_surm <- read.csv("mmer_patx_binned100kb_chr1.tsv", header = FALSE, sep = "\t")
+patx_x_surf <- read.csv("fmer_patx_binned100kb_chrx.tsv", header = FALSE, sep = "\t")
+patx_y_surf <- read.csv("fmer_patx_binned100kb_chry.tsv", header = FALSE, sep = "\t")
+patx_1_surf <- read.csv("fmer_patx_binned100kb_chr1.tsv", header = FALSE, sep = "\t")
+```
+
+# Analysis
+## Data Prep
+### Kmer Cov Data
+```{r}
+# Designate male and female dataframes to use
+male <- patx_x_surm
+female <- patx_x_surf
+
+colnames(male) <- c("chrom","bin","depth")
+colnames(female) <- c("chrom","bin","depth")
+
+kmer_cov_ratio <- data.frame(
+  chrom = male$chrom,
+  bin = male$bin,
+  mal_depth = male$depth,
+  fem_depth = female$depth,
+  ratio_mf = male$depth/female$depth
+)
+
+rm(male)
+rm(female)
+```
+### Ill Cov Data
+```{r}
+# Designate male and female dataframes to use
+male <- mal_x_100kb
+female <- fem_x_100kb
+
+colnames(male) <- c("chrom","bin","depth")
+colnames(female) <- c("chrom","bin","depth")
+
+ill_cov_ratio <- data.frame(
+  chrom = male$chrom,
+  bin = male$bin,
+  mal_depth = male$depth,
+  fem_depth = female$depth,
+  ratio_mf = male$depth/female$depth
+)
+
+rm(male)
+rm(female)
+```
+
+### Isoseq Data
+```{r}
+
+## Named vs Unnamed
+colnames(y_gene_cov) <- c("gene","coverage","named")
+
+
+named_mean <- mean(y_gene_cov[y_gene_cov$named == "Named","coverage"])
+
+unnamed_mean <- mean(y_gene_cov[y_gene_cov$named == "Unnamed","coverage"])
+
+named_stderr <- sd(y_gene_cov[y_gene_cov$named == "Named","coverage"])/length(y_gene_cov[y_gene_cov$named == "Named","coverage"])
+
+unnamed_stderr <- sd(y_gene_cov[y_gene_cov$named == "Unnamed","coverage"])/length(y_gene_cov[y_gene_cov$named == "Unnamed","coverage"])
+
+summary_table <- data.frame(
+  Status=c("Named","Unnamed"),
+  Mean_Coverage=c(named_mean,unnamed_mean),
+  Stderr=c(named_stderr,unnamed_stderr)
+)
+
+colnames(y_gene_cov) <- c("gene","coverage","named")
+
+## MSY vs PAR
+genecov_input <- y_msy_cov
+
+colnames(genecov_input) <- c("gene","coverage","status")
+
+msy_mean <- mean(genecov_input[genecov_input$status == "MSY","coverage"])
+
+par_mean <- mean(genecov_input[genecov_input$status == "PAR","coverage"])
+
+msy_stderr <- sd(genecov_input[genecov_input$status == "MSY","coverage"])/length(genecov_input[genecov_input$status == "MSY","coverage"])
+
+par_stderr <- sd(genecov_input[genecov_input$status == "PAR","coverage"])/length(genecov_input[genecov_input$status == "PAR","coverage"])
+
+summary_table <- data.frame(
+  Status=c("MSY","PAR"),
+  Mean_Coverage=c(msy_mean,par_mean),
+  Stderr=c(msy_stderr,par_stderr)
+)
+```
+
+### FST data
+```{r}
+fst <- fst_1_100kb
+
+colnames(fst) <- c("bin","fst")
+```
+
+## Graph
+### Kmer Cov Data
+```{r}
+ggplot(kmer_cov_ratio)+
+  geom_line(color = "red", aes(x=bin,y=mal_depth))+
+  geom_line(color = "blue", aes(x=bin,y=fem_depth))+
+  theme_classic2()+
+  theme(axis.text.x = element_text(angle = 90))
+```
+### Ill Cov Data
+```{r}
+ggplot(ill_cov_ratio)+
+  geom_line(color = "red", aes(x=bin,y=mal_depth))+
+  geom_line(color = "blue", aes(x=bin,y=fem_depth))+
+  theme_classic2()+
+  theme(axis.text.x = element_text(angle = 90))
+
+ggplot(ill_cov_ratio, aes(x=bin,y=ratio_mf))+
+ geom_line(linewidth = 0.2)+
+ theme_classic2()+
+ theme(axis.text.x = element_text(angle = 90))
+
+```
+
+### Isoseq Data
+```{r}
+# ggplot(y_gene_cov, aes(x=named))+
+#   geom_col(fill = c("red","blue"))+
+#   geom_errorbar(aes(x=named, ymin=mean-stderr, ymax=mean+stderr))+
+#   theme_classic2()
+
+ggplot(summary_table, aes(x=Status, y=Mean_Coverage, fill=Status)) +
+  geom_bar(position=position_dodge(), stat="identity",
+           colour='black') +
+  geom_errorbar(aes(ymin=Mean_Coverage-Stderr, ymax=Mean_Coverage+Stderr), width=.2)+
+  theme_classic2()
+```
+
+### FST data
+```{r}
+ggplot(fst, aes(x=bin, y=fst))+
+  geom_line(size = .5)+
+  theme_classic2()
+```
+
+### Combined graph
+```{r}
+base_ill_fem <- 52.993
+stderr_ill_fem <- 0.00074205
+base_ill_mal <- 48.2592
+stderr_ill_mal <- 0.000661657
+base_ill_rat <- 1.09685
+stderr_ill_rat <- 0
+
+base_kmer_fem <- 0.00080228
+stderr_kmer_fem <- 2.98483e-06
+base_kmer_mal <- 0.0566676
+stderr_kmer_mal <- 3.04232e-05
+base_kmer_rat <- 70.6332
+stderr_kmer_rat <- 0
+
+base_fst <-0.000248361
+stderr_fst <- 3.63355e-07
+
+bin_lims <- c(0,360)
+
+ggplot(kmer_cov_ratio)+
+  geom_line(color = "red", aes(x=bin,y=mal_depth))+
+  geom_line(color = "blue", aes(x=bin,y=fem_depth))+
+  coord_cartesian(xlim=bin_lims,expand = FALSE)+
+  geom_hline(yintercept=base_kmer_fem,linetype = 2,color = "blue")+
+  annotate("rect", xmin = -Inf, xmax = Inf, ymin = base_kmer_fem-stderr_kmer_fem, ymax = base_kmer_fem+stderr_kmer_fem, fill = "blue", alpha = .5, color = NA)+
+  geom_hline(yintercept=base_kmer_mal,linetype = 2,color = "red")+
+  annotate("rect", xmin = -Inf, xmax = Inf, ymin = base_kmer_mal-stderr_kmer_mal, ymax = base_kmer_mal+stderr_kmer_mal, fill = "red", alpha = .5, color = NA)+
+  theme_classic2()+
+  theme(axis.text.x = element_text(angle = 90)) -> kmer_cov_graph
+
+ggplot(ill_cov_ratio, aes(x=bin,y=ratio_mf))+
+ geom_line()+
+ geom_hline(yintercept=base_ill_rat,linetype = 2,color = "black")+
+ theme_classic2()+
+ coord_cartesian(xlim=bin_lims,expand = FALSE)+
+ theme(axis.text.x = element_text(angle = 90)) -> ill_cov_graph
+
+ggplot(fst, aes(x=bin, y=fst))+
+  geom_line()+
+  coord_cartesian(xlim=bin_lims,expand = FALSE)+
+  geom_hline(yintercept=base_fst,linetype = 2,color = "black")+
+  annotate("rect", xmin = -Inf, xmax = Inf, ymin = base_fst-stderr_fst, ymax = base_fst+stderr_fst, fill = "black", alpha = .5, color = NA)+
+  theme_classic2()+
+  theme(axis.text.x = element_text(angle = 90))-> fst_graph
+
+grid.arrange(kmer_cov_graph, ill_cov_graph, fst_graph, ncol = 1)
+
+```

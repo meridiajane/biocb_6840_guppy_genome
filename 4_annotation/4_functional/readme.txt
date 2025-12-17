@@ -1,0 +1,1 @@
+BLAST2GO is a GUI program, we followed the steps in the GUI to perform a BLAST from our BRAKER and PASA annotated geneset against NCBI's database, then assigned GO terms. The scripts in this directory are the tools used to assign names to genes based on the BLAST2GO output.

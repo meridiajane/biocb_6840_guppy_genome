@@ -1,0 +1,49 @@
+---
+title: "pafr"
+output: html_document
+date: "2025-01-06"
+---
+
+# Env Setup
+```{r setup, include=TRUE}
+library(librarian)
+shelf(pafr)
+setwd("")
+```
+
+# Import data
+```{r}
+ali_pat2du <- read_paf("pat_du_aln.PAF")
+ali_pat2ref <- read_paf("pat_ref_aln.PAF")
+ali_mat2du <- read_paf("mat_du_aln.PAF")
+ali_mat2ref <- read_paf("mat_ref_aln.PAF")
+```
+
+# Post du plots
+```{r}
+pat_du_order <- list(
+  c("pat_reticulata_chr1","pat_reticulata_chr2","pat_reticulata_chr3","pat_reticulata_chr4","pat_reticulata_chr5","pat_reticulata_chr6","pat_reticulata_chr7","pat_reticulata_chr8","pat_reticulata_chr9","pat_reticulata_chr10","pat_reticulata_chr11","pat_reticulata_chr12","pat_reticulata_chr13","pat_reticulata_chr14","pat_reticulata_chr15","pat_reticulata_chr16","pat_reticulata_chr17","pat_reticulata_chr18","pat_reticulata_chr19","pat_reticulata_chr20","pat_reticulata_chr21","pat_reticulata_chr22","pat_reticulata_chr23"),
+  c("CP158548.1","CP158553.1","CP158554.1","CP158555.1","CP158556.1","CP158557.1","CP158558.1","CP158559.1","CP158560.1","CP158539.1","CP158540.1","CP158561.1","CP158541.1","CP158542.1","CP158543.1","CP158544.1","CP158545.1","CP158546.1","CP158547.1","CP158549.1","CP158550.1","CP158551.1","CP158552.1")
+)
+
+mat_du_order <- list(
+  c("mat_reticulata_chr1","mat_reticulata_chr2","mat_reticulata_chr3","mat_reticulata_chr4","mat_reticulata_chr5","mat_reticulata_chr6","mat_reticulata_chr7","mat_reticulata_chr8","mat_reticulata_chr9","mat_reticulata_chr10","mat_reticulata_chr11","mat_reticulata_chr12","mat_reticulata_chr13","mat_reticulata_chr14","mat_reticulata_chr15","mat_reticulata_chr16","mat_reticulata_chr17","mat_reticulata_chr18","mat_reticulata_chr19","mat_reticulata_chr20","mat_reticulata_chr21","mat_reticulata_chr22","mat_reticulata_chr23"),
+  c("CP158548.1","CP158553.1","CP158554.1","CP158555.1","CP158556.1","CP158557.1","CP158558.1","CP158559.1","CP158560.1","CP158539.1","CP158540.1","CP158561.1","CP158541.1","CP158542.1","CP158543.1","CP158544.1","CP158545.1","CP158546.1","CP158547.1","CP158549.1","CP158550.1","CP158551.1","CP158552.1")
+)
+
+pat_duref_order <- list(
+  c("pat_reticulata_chr1","pat_reticulata_chr2","pat_reticulata_chr3","pat_reticulata_chr4","pat_reticulata_chr5","pat_reticulata_chr6","pat_reticulata_chr7","pat_reticulata_chr8","pat_reticulata_chr9","pat_reticulata_chr10","pat_reticulata_chr11","pat_reticulata_chr12","pat_reticulata_chr13","pat_reticulata_chr14","pat_reticulata_chr15","pat_reticulata_chr16","pat_reticulata_chr17","pat_reticulata_chr18","pat_reticulata_chr19","pat_reticulata_chr20","pat_reticulata_chr21","pat_reticulata_chr22","pat_reticulata_chr23"),
+  c("NC_024331.1","NC_024332.1","NC_024333.1","NC_024334.1","NC_024335.1","NC_024336.1","NC_024337.1","NC_024338.1","NC_024339.1","NC_024340.1","NC_024341.1","NC_024342.1","NC_024343.1","NC_024344.1","NC_024345.1","NC_024346.1","NC_024347.1","NC_024348.1","NC_024349.1","NC_024350.1","NC_024351.1","NC_024352.1","NC_024353.1")
+)
+
+mat_duref_order <- list(
+  c("mat_reticulata_chr1","mat_reticulata_chr2","mat_reticulata_chr3","mat_reticulata_chr4","mat_reticulata_chr5","mat_reticulata_chr6","mat_reticulata_chr7","mat_reticulata_chr8","mat_reticulata_chr9","mat_reticulata_chr10","mat_reticulata_chr11","mat_reticulata_chr12","mat_reticulata_chr13","mat_reticulata_chr14","mat_reticulata_chr15","mat_reticulata_chr16","mat_reticulata_chr17","mat_reticulata_chr18","mat_reticulata_chr19","mat_reticulata_chr20","mat_reticulata_chr21","mat_reticulata_chr22","mat_reticulata_chr23"),
+  c("NC_024331.1","NC_024332.1","NC_024333.1","NC_024334.1","NC_024335.1","NC_024336.1","NC_024337.1","NC_024338.1","NC_024339.1","NC_024340.1","NC_024341.1","NC_024342.1","NC_024343.1","NC_024344.1","NC_024345.1","NC_024346.1","NC_024347.1","NC_024348.1","NC_024349.1","NC_024350.1","NC_024351.1","NC_024352.1","NC_024353.1")
+)
+
+dotplot(ali_pat2du, line_size = .5, label_seqs = FALSE, order_by = "provided", ordering = pat_du_order)
+dotplot(ali_pat2ref, line_size = .5, label_seqs = FALSE, order_by = "provided", ordering = pat_duref_order)
+dotplot(ali_mat2du, line_size = .5, label_seqs = FALSE, order_by = "provided", ordering = mat_du_order)
+dotplot(ali_mat2ref, line_size = .5, label_seqs = FALSE, order_by = "provided", ordering = mat_duref_order)
+```
+`
